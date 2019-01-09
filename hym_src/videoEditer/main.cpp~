@@ -1,0 +1,82 @@
+/////////////////////////////
+//目的：実験のデータ作成のため
+/////////////////////////////
+
+
+
+#include "opencv2/video/tracking.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+
+#include <iostream>
+#include <ctype.h>
+
+using namespace cv;
+using namespace std;
+
+Mat image;
+
+bool backprojMode = false;
+bool selectObject = false;
+int trackObject = 0;
+bool showHist = true;
+Point origin;
+Rect selection;
+int vmin = 10, vmax = 256, smin = 30;
+
+void help(){
+  
+  cout << "b:begin\np:pause\ne:end\n" << endl;
+
+}
+
+const char* keys =
+{
+    "{1|  | 0 | camera number}"
+};
+
+int main( int argc, const char** argv )
+{
+
+  help();
+
+  VideoCapture cap(argv[1]); //for movie
+
+  Mat frame, hsv, hue, mask, hist,tmpImg, histimg = Mat::zeros(200, 320, CV_8UC3), backproj;
+  bool paused = false;
+  cap >> tmpImg;
+
+  VideoWriter writer("result.avi",CV_FOURCC_MACRO('M', 'J', 'P', 'G'), 25, Size(tmpImg.cols,tmpImg.rows), true);
+  //XVID　Linux
+  //MJPG  Windows
+  bool write_flag = false; int framecnt=0;
+
+  while(1){
+
+    cap >> frame;
+    imshow( "res", frame );
+
+    char c = (char)waitKey(10);
+    if( c == 27 )
+      break;
+    switch(c){
+      case 'b':
+        write_flag = true;
+	break;
+      case 'p':
+	write_flag = false;
+	break;
+    case 'e':
+      cout << "frameNum = " << framecnt << endl;
+      goto exit; 
+    }
+    
+    if(write_flag == true){
+      writer << frame;
+      framecnt++;
+    }
+  }
+
+ exit:
+  return 0;
+}
